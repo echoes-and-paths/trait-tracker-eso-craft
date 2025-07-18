@@ -20,11 +20,28 @@ export interface ItemNote {
   note: string;
 }
 
+export interface ItemBankStatus {
+  profileId: string;
+  section: string;
+  item: string;
+  inBank: boolean;
+}
+
+export interface ResearchTimer {
+  profileId: string;
+  section: string;
+  item: string;
+  trait: string;
+  endTime: Date;
+}
+
 export interface AppState {
   profiles: Profile[];
   currentProfileId: string | null;
   traitProgress: TraitProgress[];
   itemNotes: ItemNote[];
+  itemBankStatus: ItemBankStatus[];
+  researchTimers: ResearchTimer[];
   searchQuery: string;
 }
 

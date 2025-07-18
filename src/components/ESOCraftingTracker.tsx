@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ProfileManager } from './ProfileManager';
 import { Controls } from './Controls';
 import { CraftingTable } from './CraftingTable';
-import { Profile, TraitProgress, ItemNote, AppState } from '../types';
+import { Profile, TraitProgress, ItemNote, ItemBankStatus, ResearchTimer, AppState } from '../types';
 import { CRAFTING_DATA } from '../data/craftingData';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +20,8 @@ const INITIAL_STATE: AppState = {
   currentProfileId: null,
   traitProgress: [],
   itemNotes: [],
+  itemBankStatus: [],
+  researchTimers: [],
   searchQuery: ''
 };
 
@@ -75,7 +77,9 @@ export function ESOCraftingTracker() {
       currentProfileId: prev.profiles.length > 1 ? 
         prev.profiles.find(p => p.id !== profileId)?.id || null : null,
       traitProgress: prev.traitProgress.filter(tp => tp.profileId !== profileId),
-      itemNotes: prev.itemNotes.filter(note => note.profileId !== profileId)
+      itemNotes: prev.itemNotes.filter(note => note.profileId !== profileId),
+      itemBankStatus: prev.itemBankStatus.filter(status => status.profileId !== profileId),
+      researchTimers: prev.researchTimers.filter(timer => timer.profileId !== profileId)
     }));
   };
 
@@ -173,13 +177,107 @@ export function ESOCraftingTracker() {
     setAppState(prev => ({
       ...prev,
       traitProgress: prev.traitProgress.filter(tp => tp.profileId !== currentProfile.id),
-      itemNotes: prev.itemNotes.filter(note => note.profileId !== currentProfile.id)
+      itemNotes: prev.itemNotes.filter(note => note.profileId !== currentProfile.id),
+      itemBankStatus: prev.itemBankStatus.filter(status => status.profileId !== currentProfile.id),
+      researchTimers: prev.researchTimers.filter(timer => timer.profileId !== currentProfile.id)
     }));
   };
 
-  // Filter progress and notes for current profile
+  // Bank Status Management
+  const handleBankStatusChange = (section: string, item: string, inBank: boolean) => {
+    if (!currentProfile) return;
+
+    setAppState(prev => {
+      const existingStatusIndex = prev.itemBankStatus.findIndex(status =>
+        status.profileId === currentProfile.id &&
+        status.section === section &&
+        status.item === item
+      );
+
+      let newBankStatus = [...prev.itemBankStatus];
+
+      if (existingStatusIndex >= 0) {
+        if (inBank) {
+          newBankStatus[existingStatusIndex] = { ...newBankStatus[existingStatusIndex], inBank };
+        } else {
+          newBankStatus.splice(existingStatusIndex, 1);
+        }
+      } else if (inBank) {
+        newBankStatus.push({
+          profileId: currentProfile.id,
+          section,
+          item,
+          inBank
+        });
+      }
+
+      return {
+        ...prev,
+        itemBankStatus: newBankStatus
+      };
+    });
+  };
+
+  // Timer Management
+  const handleTimerSet = (section: string, item: string, trait: string, hours: number) => {
+    if (!currentProfile) return;
+
+    const endTime = new Date();
+    endTime.setHours(endTime.getHours() + hours);
+
+    setAppState(prev => {
+      const existingTimerIndex = prev.researchTimers.findIndex(timer =>
+        timer.profileId === currentProfile.id &&
+        timer.section === section &&
+        timer.item === item &&
+        timer.trait === trait
+      );
+
+      let newTimers = [...prev.researchTimers];
+
+      if (existingTimerIndex >= 0) {
+        newTimers[existingTimerIndex] = { ...newTimers[existingTimerIndex], endTime };
+      } else {
+        newTimers.push({
+          profileId: currentProfile.id,
+          section,
+          item,
+          trait,
+          endTime
+        });
+      }
+
+      return {
+        ...prev,
+        researchTimers: newTimers
+      };
+    });
+
+    toast({
+      title: "Research Timer Set",
+      description: `Timer set for ${item} - ${trait} (${hours}h)`,
+    });
+  };
+
+  const handleTimerRemove = (section: string, item: string, trait: string) => {
+    if (!currentProfile) return;
+
+    setAppState(prev => ({
+      ...prev,
+      researchTimers: prev.researchTimers.filter(timer =>
+        !(timer.profileId === currentProfile.id &&
+          timer.section === section &&
+          timer.item === item &&
+          timer.trait === trait)
+      )
+    }));
+  };
+
+  // Filter data for current profile
   const currentProgress = appState.traitProgress.filter(tp => tp.profileId === currentProfile?.id);
   const currentNotes = appState.itemNotes.filter(note => note.profileId === currentProfile?.id);
+  const currentBankStatus = appState.itemBankStatus.filter(status => status.profileId === currentProfile?.id);
+  const currentTimers = appState.researchTimers.filter(timer => timer.profileId === currentProfile?.id);
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
@@ -231,9 +329,14 @@ export function ESOCraftingTracker() {
                       sectionKey={key}
                       progress={currentProgress}
                       notes={currentNotes}
+                      bankStatus={currentBankStatus}
+                      timers={currentTimers}
                       searchQuery={searchQuery}
                       onProgressChange={handleProgressChange}
                       onNoteChange={handleNoteChange}
+                      onBankStatusChange={handleBankStatusChange}
+                      onTimerSet={handleTimerSet}
+                      onTimerRemove={handleTimerRemove}
                     />
                   </div>
                 );

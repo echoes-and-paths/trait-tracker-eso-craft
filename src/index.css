@@ -157,6 +157,14 @@
   .notes-icon.has-notes {
     @apply text-warning;
   }
+
+  .timer-button {
+    @apply text-muted-foreground hover:text-primary transition-colors p-1 rounded;
+  }
+
+  .timer-button.active {
+    @apply text-destructive hover:text-destructive;
+  }
   
   .eso-card {
     @apply bg-gradient-to-br from-card to-card/80 border border-border rounded-lg shadow-xl backdrop-blur-sm;
