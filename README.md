@@ -1,73 +1,181 @@
-# Welcome to your Lovable project
+# ESO Crafting Research Tracker
 
-## Project info
+A comprehensive Elder Scrolls Online crafting research tracker built with React, TypeScript, and TailwindCSS. Track your trait research progress across all crafting professions with multiple character profile support.
 
-**URL**: https://lovable.dev/projects/3ab222a0-c65e-4acd-9302-17bf574ecebe
+## Features
 
-## How can I edit this code?
+- **Multi-Character Support**: Create and manage multiple character profiles
+- **Complete Crafting Coverage**: Track all four major crafting lines:
+  - Blacksmithing (Weapons & Heavy Armor)
+  - Clothing (Light & Medium Armor)
+  - Woodworking (Weapons & Shields)
+  - Jewelry Crafting (Rings & Necklaces)
+- **Progress Tracking**: Visual checkboxes for each trait research with progress bars
+- **Notes System**: Add research notes for each item with modal interface
+- **Smart Search**: Filter items and traits in real-time
+- **Theme Support**: Toggle between light and dark themes (saved per profile)
+- **Data Persistence**: All data saved to localStorage with instant sync
+- **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
 
-There are several ways of editing your application.
+## Tech Stack
 
-**Use Lovable**
+- **Frontend**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: TailwindCSS with custom ESO-themed design system
+- **UI Components**: shadcn/ui component library
+- **State Management**: React hooks with localStorage persistence
+- **Icons**: Lucide React icons
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3ab222a0-c65e-4acd-9302-17bf574ecebe) and start prompting.
+## Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js (v16 or higher)
+- npm or yarn
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. Clone the repository:
+```bash
+git clone <your-repository-url>
+cd eso-crafting-research-tracker
+```
 
-Follow these steps:
+2. Install dependencies:
+```bash
+npm install
+```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+3. Start the development server:
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+4. Open your browser and navigate to `http://localhost:8080`
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Building for Production
 
-**Use GitHub Codespaces**
+```bash
+npm run build
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+The built files will be in the `dist` directory.
 
-## What technologies are used for this project?
+## Usage Guide
 
-This project is built with:
+### Creating Your First Profile
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. Click the "+" button next to the profile selector
+2. Enter your character name
+3. Click "Create Profile" to get started
 
-## How can I deploy this project?
+### Tracking Research Progress
 
-Simply open [Lovable](https://lovable.dev/projects/3ab222a0-c65e-4acd-9302-17bf574ecebe) and click on Share -> Publish.
+1. Navigate to any crafting section (Blacksmithing, Clothing, etc.)
+2. Click the checkboxes next to traits you've researched
+3. Watch your progress bar update in real-time
+4. Use the search bar to quickly find specific items or traits
 
-## Can I connect a custom domain to my Lovable project?
+### Adding Notes
 
-Yes, you can!
+1. Click the 📝 icon next to any item name
+2. Add your research notes in the modal
+3. Notes are automatically saved and the icon highlights when notes exist
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Managing Profiles
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- **Switch Profiles**: Use the dropdown to change between characters
+- **Rename Profile**: Click the edit (✏️) button
+- **Delete Profile**: Click the trash (🗑️) button (requires confirmation)
+- **Reset Progress**: Use the reset button to clear all research for current profile
+
+### Themes
+
+Click the sun/moon icon to toggle between light and dark themes. Your preference is saved per character profile.
+
+## Data Storage
+
+All data is stored locally in your browser using localStorage. This includes:
+- Character profiles and settings
+- Research progress for all traits
+- Item notes
+- Theme preferences
+
+No data is sent to external servers, ensuring your privacy and allowing offline use.
+
+## Browser Compatibility
+
+- Chrome/Chromium (recommended)
+- Firefox
+- Safari
+- Edge
+
+## Development
+
+### Project Structure
+
+```
+src/
+├── components/          # React components
+│   ├── ui/             # shadcn/ui components
+│   ├── Controls.tsx    # Search and theme controls
+│   ├── CraftingTable.tsx # Main research tracking table
+│   ├── NotesModal.tsx  # Notes editing modal
+│   ├── ProgressBar.tsx # Progress visualization
+│   └── ProfileManager.tsx # Character profile management
+├── data/               # Crafting data and types
+├── hooks/              # Custom React hooks
+├── types/              # TypeScript type definitions
+└── pages/              # Application pages
+```
+
+### Adding New Crafting Data
+
+To add new items or traits, edit `src/data/craftingData.ts`:
+
+```typescript
+export const CRAFTING_DATA = {
+  newSection: {
+    name: "New Crafting Section",
+    traits: ["Trait1", "Trait2", "Trait3"],
+    items: [
+      { name: "Item Name", traits: [] }
+    ]
+  }
+};
+```
+
+### Customizing Themes
+
+Edit the CSS variables in `src/index.css` to customize colors:
+
+```css
+:root {
+  --primary: 45 90% 55%;  /* ESO Gold */
+  --accent: 200 95% 60%;  /* ESO Blue */
+  /* ... other colors */
+}
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+## Acknowledgments
+
+- Elder Scrolls Online by Bethesda Game Studios
+- ESO crafting community for trait research data
+- shadcn/ui for the excellent component library
+- Lucide React for beautiful icons
+
+---
+
+**Note**: This is a fan-made tool and is not affiliated with or endorsed by Bethesda Game Studios or ZeniMax Online Studios.

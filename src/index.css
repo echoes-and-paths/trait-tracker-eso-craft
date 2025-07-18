@@ -2,41 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
+/* ESO Crafting Research Tracker Design System */
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Elder Scrolls inspired color palette */
+    --background: 210 25% 8%;
+    --foreground: 40 80% 90%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 30% 12%;
+    --card-foreground: 40 80% 90%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 30% 15%;
+    --popover-foreground: 40 80% 90%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 45 90% 55%;
+    --primary-foreground: 220 30% 12%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 210 25% 18%;
+    --secondary-foreground: 40 70% 85%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 210 25% 15%;
+    --muted-foreground: 40 30% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 200 95% 60%;
+    --accent-foreground: 220 30% 12%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 40 80% 90%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 210 25% 20%;
+    --input: 210 25% 15%;
+    --ring: 45 90% 55%;
 
-    --radius: 0.5rem;
+    --success: 120 60% 50%;
+    --warning: 35 100% 55%;
+    
+    /* Custom ESO colors */
+    --eso-gold: 45 90% 55%;
+    --eso-blue: 200 95% 60%;
+    --eso-dark: 220 30% 8%;
+    --eso-light: 40 80% 90%;
+    
+    /* Crafting states */
+    --trait-unchecked: 0 65% 85%;
+    --trait-checked: 120 50% 85%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+    --gradient-card: linear-gradient(145deg, hsl(var(--card)), hsl(210 25% 14%));
+    
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -55,34 +70,35 @@ All colors MUST be HSL.
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+  .light {
+    /* Light theme overrides */
+    --background: 40 15% 92%;
+    --foreground: 220 30% 15%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 40 20% 96%;
+    --card-foreground: 220 30% 15%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 40 20% 98%;
+    --popover-foreground: 220 30% 15%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 45 85% 45%;
+    --primary-foreground: 40 20% 96%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 40 10% 85%;
+    --secondary-foreground: 220 30% 20%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 40 8% 88%;
+    --muted-foreground: 220 15% 45%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 200 80% 50%;
+    --accent-foreground: 40 20% 96%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 40 15% 80%;
+    --input: 40 15% 85%;
+    
+    /* Light theme crafting states */
+    --trait-unchecked: 0 55% 92%;
+    --trait-checked: 120 40% 92%;
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -100,6 +116,55 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
+  }
+}
+
+@layer components {
+  /* ESO Crafting Components */
+  .trait-checkbox {
+    @apply w-6 h-6 rounded border-2 border-border transition-all duration-200 cursor-pointer flex items-center justify-center;
+  }
+  
+  .trait-checkbox.unchecked {
+    @apply bg-red-100 border-red-300 hover:bg-red-200;
+  }
+  
+  .trait-checkbox.checked {
+    @apply bg-green-100 border-green-300 hover:bg-green-200;
+  }
+  
+  .dark .trait-checkbox.unchecked {
+    @apply bg-red-900/30 border-red-700 hover:bg-red-800/40;
+  }
+  
+  .dark .trait-checkbox.checked {
+    @apply bg-green-900/30 border-green-700 hover:bg-green-800/40;
+  }
+  
+  .progress-bar {
+    @apply h-4 bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500 shadow-lg;
+  }
+  
+  .crafting-table {
+    @apply bg-card border border-border rounded-lg shadow-lg overflow-hidden;
+  }
+  
+  .trait-header {
+    @apply transform -rotate-45 origin-center text-xs font-medium whitespace-nowrap;
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+  }
+  
+  .notes-icon {
+    @apply w-5 h-5 text-muted-foreground hover:text-primary transition-colors cursor-pointer;
+  }
+  
+  .notes-icon.has-notes {
+    @apply text-warning;
+  }
+  
+  .eso-card {
+    @apply bg-gradient-to-br from-card to-card/80 border border-border rounded-lg shadow-xl backdrop-blur-sm;
   }
 }
