@@ -4,79 +4,120 @@ export interface CraftingItem {
   traits: string[];
 }
 
-export interface CraftingSection {
+export interface CraftingSubsection {
   name: string;
   items: CraftingItem[];
   traits: string[];
 }
 
+export interface CraftingSection {
+  name: string;
+  subsections: CraftingSubsection[];
+}
+
+// Define trait sets
+const WEAPON_TRAITS = ["Charged", "Defending", "Infused", "Nirnhoned", "Powered", "Precise", "Sharpened", "Training", "Decisive"];
+const ARMOR_TRAITS = ["Divines", "Invigorating", "Impenetrable", "Infused", "Nirnhoned", "Reinforced", "Sturdy", "Training", "Well-Fitted"];
+const JEWELRY_TRAITS = ["Arcane", "Bloodthirsty", "Harmony", "Healthy", "Infused", "Protective", "Robust", "Swift", "Triune"];
+
 export const CRAFTING_DATA: Record<string, CraftingSection> = {
   blacksmithing: {
     name: "Blacksmithing",
-    traits: [
-      "Powered", "Charged", "Precise", "Infused", "Defending", "Training", "Sharpened", "Decisive", "Sturdy"
-    ],
-    items: [
-      { name: "Sword", traits: [] },
-      { name: "Axe", traits: [] },
-      { name: "Mace", traits: [] },
-      { name: "Dagger", traits: [] },
-      { name: "Greatsword", traits: [] },
-      { name: "Battle Axe", traits: [] },
-      { name: "Maul", traits: [] },
-      { name: "Heavy Helm", traits: [] },
-      { name: "Heavy Armor", traits: [] },
-      { name: "Heavy Pants", traits: [] },
-      { name: "Heavy Gloves", traits: [] },
-      { name: "Heavy Boots", traits: [] },
-      { name: "Heavy Shoulders", traits: [] },
-      { name: "Heavy Belt", traits: [] }
+    subsections: [
+      {
+        name: "Weapons",
+        traits: WEAPON_TRAITS,
+        items: [
+          { name: "Sword", traits: [] },
+          { name: "Axe", traits: [] },
+          { name: "Mace", traits: [] },
+          { name: "Dagger", traits: [] },
+          { name: "Greatsword", traits: [] },
+          { name: "Battle Axe", traits: [] },
+          { name: "Maul", traits: [] }
+        ]
+      },
+      {
+        name: "Heavy Armor",
+        traits: ARMOR_TRAITS,
+        items: [
+          { name: "Cuirasses", traits: [] },
+          { name: "Greaves", traits: [] },
+          { name: "Pauldrons", traits: [] },
+          { name: "Helms", traits: [] },
+          { name: "Sabatons", traits: [] },
+          { name: "Gauntlets", traits: [] },
+          { name: "Girdles", traits: [] }
+        ]
+      }
     ]
   },
   clothing: {
-    name: "Clothing", 
-    traits: [
-      "Divines", "Infused", "Nirnhoned", "Sturdy", "Training", "Impenetrable", "Reinforced", "Well-Fitted", "Invigorating"
-    ],
-    items: [
-      { name: "Light Robe", traits: [] },
-      { name: "Light Hat", traits: [] },
-      { name: "Light Pants", traits: [] },
-      { name: "Light Gloves", traits: [] },
-      { name: "Light Shoes", traits: [] },
-      { name: "Light Shoulders", traits: [] },
-      { name: "Light Belt", traits: [] },
-      { name: "Medium Jacket", traits: [] },
-      { name: "Medium Helmet", traits: [] },
-      { name: "Medium Pants", traits: [] },
-      { name: "Medium Gloves", traits: [] },
-      { name: "Medium Boots", traits: [] },
-      { name: "Medium Shoulders", traits: [] },
-      { name: "Medium Belt", traits: [] }
+    name: "Clothing",
+    subsections: [
+      {
+        name: "Light Armor",
+        traits: ARMOR_TRAITS,
+        items: [
+          { name: "Robes", traits: [] },
+          { name: "Jerkins", traits: [] },
+          { name: "Hats", traits: [] },
+          { name: "Epaulets", traits: [] },
+          { name: "Breeches", traits: [] },
+          { name: "Shoes", traits: [] },
+          { name: "Gloves", traits: [] },
+          { name: "Sash", traits: [] }
+        ]
+      },
+      {
+        name: "Medium Armor",
+        traits: ARMOR_TRAITS,
+        items: [
+          { name: "Jacks", traits: [] },
+          { name: "Guards", traits: [] },
+          { name: "Helmets", traits: [] },
+          { name: "Arm Cops", traits: [] },
+          { name: "Boots", traits: [] },
+          { name: "Bracers", traits: [] },
+          { name: "Belts", traits: [] }
+        ]
+      }
     ]
   },
   woodworking: {
     name: "Woodworking",
-    traits: [
-      "Powered", "Charged", "Precise", "Infused", "Defending", "Training", "Sharpened", "Decisive", "Nirnhoned"
-    ],
-    items: [
-      { name: "Bow", traits: [] },
-      { name: "Fire Staff", traits: [] },
-      { name: "Frost Staff", traits: [] },
-      { name: "Lightning Staff", traits: [] },
-      { name: "Restoration Staff", traits: [] },
-      { name: "Shield", traits: [] }
+    subsections: [
+      {
+        name: "Weapons",
+        traits: WEAPON_TRAITS,
+        items: [
+          { name: "Bow", traits: [] },
+          { name: "Fire Staff", traits: [] },
+          { name: "Frost Staff", traits: [] },
+          { name: "Lightning Staff", traits: [] },
+          { name: "Restoration Staff", traits: [] }
+        ]
+      },
+      {
+        name: "Shields",
+        traits: ARMOR_TRAITS,
+        items: [
+          { name: "Shield", traits: [] }
+        ]
+      }
     ]
   },
   jewelry: {
     name: "Jewelry Crafting",
-    traits: [
-      "Arcane", "Healthy", "Robust", "Triune", "Infused", "Protective", "Swift", "Harmony", "Bloodthirsty"
-    ],
-    items: [
-      { name: "Ring", traits: [] },
-      { name: "Necklace", traits: [] }
+    subsections: [
+      {
+        name: "Jewelry",
+        traits: JEWELRY_TRAITS,
+        items: [
+          { name: "Ring", traits: [] },
+          { name: "Necklace", traits: [] }
+        ]
+      }
     ]
   }
 };
@@ -84,7 +125,9 @@ export const CRAFTING_DATA: Record<string, CraftingSection> = {
 export const getAllTraits = (): string[] => {
   const allTraits = new Set<string>();
   Object.values(CRAFTING_DATA).forEach(section => {
-    section.traits.forEach(trait => allTraits.add(trait));
+    section.subsections.forEach(subsection => {
+      subsection.traits.forEach(trait => allTraits.add(trait));
+    });
   });
   return Array.from(allTraits);
 };
