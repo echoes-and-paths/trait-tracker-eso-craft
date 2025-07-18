@@ -22,6 +22,17 @@ export function CraftingTable({
   onProgressChange,
   onNoteChange
 }: CraftingTableProps) {
+  // Safety check for subsections
+  if (!section || !section.subsections || !Array.isArray(section.subsections)) {
+    return (
+      <div className="eso-card p-6">
+        <div className="text-center py-8 text-muted-foreground">
+          No crafting data available for this section.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {section.subsections.map((subsection, index) => (
