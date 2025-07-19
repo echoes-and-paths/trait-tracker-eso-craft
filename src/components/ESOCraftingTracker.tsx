@@ -6,7 +6,10 @@ import { Profile, TraitProgress, ItemNote, ItemBankStatus, ResearchTimer, AppSta
 import { CRAFTING_DATA } from '../data/craftingData';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { useToast } from '@/hooks/use-toast';
-import { Hammer, Shirt, TreePine, Gem } from 'lucide-react';
+import { Hammer, Shirt, TreePine, Gem, Search, Sun, Moon, RotateCcw } from 'lucide-react';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
 
 const SECTION_ICONS = {
   blacksmithing: Hammer,
@@ -305,14 +308,76 @@ export function ESOCraftingTracker() {
 
         {currentProfile ? (
           <>
-            {/* Controls */}
-            <Controls
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              theme={currentProfile.theme}
-              onThemeToggle={handleThemeToggle}
-              onResetProgress={handleResetProgress}
-            />
+            {/* Search and Controls */}
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
+              <div className="eso-card p-4 flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search items or traits..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              
+              {/* Theme and Reset Controls */}
+              <div className="eso-card p-4 flex gap-2 items-center justify-center lg:justify-start">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleThemeToggle}
+                  className="transition-all duration-200"
+                  title="Toggle theme"
+                >
+                  {currentProfile.theme === 'dark' ? (
+                    <Sun className="w-4 h-4" />
+                  ) : (
+                    <Moon className="w-4 h-4" />
+                  )}
+                </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      size="icon"
+                      className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                      title="Reset all progress"
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Reset Research Progress</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to reset all research progress for the current profile? 
+                        This action cannot be undone and will clear all completed trait research.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          handleResetProgress();
+                          toast({
+                            title: "Progress Reset",
+                            description: "All research progress has been cleared for this profile.",
+                            variant: "destructive"
+                          });
+                        }}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Reset Progress
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
 
             {/* Crafting Tables */}
             <div className="space-y-8">
