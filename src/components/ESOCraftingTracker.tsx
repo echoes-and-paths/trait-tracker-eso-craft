@@ -274,10 +274,10 @@ export function ESOCraftingTracker() {
   };
 
   // Filter data for current profile
-  const currentProgress = appState.traitProgress.filter(tp => tp.profileId === currentProfile?.id);
-  const currentNotes = appState.itemNotes.filter(note => note.profileId === currentProfile?.id);
-  const currentBankStatus = appState.itemBankStatus.filter(status => status.profileId === currentProfile?.id);
-  const currentTimers = appState.researchTimers.filter(timer => timer.profileId === currentProfile?.id);
+  const currentProgress = (appState.traitProgress || []).filter(tp => tp.profileId === currentProfile?.id);
+  const currentNotes = (appState.itemNotes || []).filter(note => note.profileId === currentProfile?.id);
+  const currentBankStatus = (appState.itemBankStatus || []).filter(status => status.profileId === currentProfile?.id);
+  const currentTimers = (appState.researchTimers || []).filter(timer => timer.profileId === currentProfile?.id);
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
