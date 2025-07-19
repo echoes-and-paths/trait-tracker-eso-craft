@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CraftingSubsection } from '../data/craftingData';
 import { TraitProgress, ItemNote, ItemBankStatus, ResearchTimer, ProgressStats } from '../types';
-import { Check, FileText, Vault, Timer, X, Package } from 'lucide-react';
+import { Check, FileText, Vault, Timer, X, Building2 } from 'lucide-react';
 import { NotesModal } from './NotesModal';
 import { ProgressBar } from './ProgressBar';
 import { Checkbox } from './ui/checkbox';
@@ -219,7 +219,7 @@ export function SubsectionTable({
               <tr className="border-b border-border bg-muted/50">
                 <th className="text-left p-4 font-semibold">Item</th>
                 <th className="w-12 p-4" title="Bank Status">
-                  <Package className="w-4 h-4 mx-auto" />
+                  <Building2 className="w-4 h-4 mx-auto" />
                 </th>
                 <th className="w-12 p-4" title="Notes">
                   <FileText className="w-4 h-4 mx-auto" />

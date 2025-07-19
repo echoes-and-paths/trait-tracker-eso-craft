@@ -4,25 +4,32 @@ import { Button } from './ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from './ui/dialog';
-import { Trash2, Edit3, Plus, User } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from './ui/alert-dialog';
+import { Trash2, Edit3, Plus, User, Sun, Moon, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProfileManagerProps {
   profiles: Profile[];
   currentProfileId: string | null;
+  currentProfile: Profile | undefined;
   onProfileSelect: (profileId: string) => void;
   onProfileCreate: (name: string) => void;
   onProfileRename: (profileId: string, newName: string) => void;
   onProfileDelete: (profileId: string) => void;
+  onThemeToggle: () => void;
+  onResetProgress: () => void;
 }
 
 export function ProfileManager({
   profiles,
   currentProfileId,
+  currentProfile,
   onProfileSelect,
   onProfileCreate,
   onProfileRename,
-  onProfileDelete
+  onProfileDelete,
+  onThemeToggle,
+  onResetProgress
 }: ProfileManagerProps) {
   const [newProfileName, setNewProfileName] = useState('');
   const [renameProfileId, setRenameProfileId] = useState<string | null>(null);
@@ -65,13 +72,30 @@ export function ProfileManager({
     });
   };
 
-  const currentProfile = profiles.find(p => p.id === currentProfileId);
-
   return (
     <div className="eso-card p-6 space-y-4">
-      <div className="flex items-center gap-3 mb-4">
-        <User className="w-6 h-6 text-primary" />
-        <h2 className="text-xl font-bold">Character Profiles</h2>
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <User className="w-6 h-6 text-primary" />
+          <h2 className="text-xl font-bold">Character Profiles</h2>
+        </div>
+        {currentProfile && (
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onThemeToggle}
+              className="transition-all duration-200"
+              title="Toggle theme"
+            >
+              {currentProfile.theme === 'dark' ? (
+                <Sun className="w-4 h-4" />
+              ) : (
+                <Moon className="w-4 h-4" />
+              )}
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -166,6 +190,44 @@ export function ProfileManager({
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="icon"
+                    className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                    title="Reset all progress"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Reset Research Progress</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to reset all research progress for the current profile? 
+                      This action cannot be undone and will clear all completed trait research.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => {
+                        onResetProgress();
+                        toast({
+                          title: "Progress Reset",
+                          description: "All research progress has been cleared for this profile.",
+                          variant: "destructive"
+                        });
+                      }}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Reset Progress
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
 
               <Dialog open={showDeleteDialog === currentProfileId} onOpenChange={(open) => {
                 setShowDeleteDialog(open ? currentProfileId : null);
