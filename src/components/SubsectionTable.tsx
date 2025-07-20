@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { CraftingSubsection } from '../data/craftingData';
 import { TraitProgress, ItemNote, ItemBankStatus, ResearchTimer, ProgressStats } from '../types';
-import { Check, FileText, Vault, Timer, X, Building2 } from 'lucide-react';
+import { Check, FileText, Building2, Timer, X } from 'lucide-react';
 import { NotesModal } from './NotesModal';
 import { ProgressBar } from './ProgressBar';
 import { Checkbox } from './ui/checkbox';
@@ -9,6 +10,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 
 interface SubsectionTableProps {
   subsection: CraftingSubsection;
@@ -212,92 +214,92 @@ export function SubsectionTable({
         </div>
       </div>
       
-      <div className="crafting-table">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/50">
-                <th className="text-left p-4 font-semibold">Item</th>
-                <th className="w-12 p-4" title="Bank Status">
-                  <Building2 className="w-4 h-4 mx-auto" />
-                </th>
-                <th className="w-12 p-4" title="Notes">
-                  <FileText className="w-4 h-4 mx-auto" />
-                </th>
-                {filteredTraits.map(trait => (
-                  <th key={trait} className="w-16 p-2 text-center">
-                    <div className="trait-header text-xs">
-                      {trait}
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredItems.map(item => (
-                <tr key={item.name} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                  <td className="p-4 font-medium">
-                    {item.name}
-                  </td>
-                  <td className="p-4 text-center">
-                    <Checkbox
-                      checked={isItemInBank(item.name)}
-                      onCheckedChange={() => handleBankToggle(item.name)}
-                      title="In Bank"
-                    />
-                  </td>
-                  <td className="p-4 text-center">
-                    <button
-                      onClick={() => handleNotesClick(item.name)}
-                      className={`notes-icon ${getItemNote(item.name) ? 'has-notes' : ''}`}
-                      title="Add notes"
-                    >
-                      <FileText className="w-5 h-5" />
-                    </button>
-                  </td>
-                  {filteredTraits.map(trait => {
-                    const timer = getTimerForTrait(item.name, trait);
-                    const timerKey = `${item.name}-${trait}`;
-                    return (
-                      <td key={trait} className="p-2 text-center relative">
-                        <div className="flex flex-col items-center gap-1">
-                          <button
-                            onClick={() => handleTraitToggle(item.name, trait)}
-                            className={`trait-checkbox ${
-                              isTraitCompleted(item.name, trait) ? 'checked' : 'unchecked'
-                            }`}
-                            title={`${trait} - ${isTraitCompleted(item.name, trait) ? 'Completed' : 'Not researched'}`}
-                          >
-                            {isTraitCompleted(item.name, trait) && (
-                              <Check className="w-4 h-4 text-green-700" />
-                            )}
-                          </button>
-                          {!isTraitCompleted(item.name, trait) && (
-                            <button
-                              onClick={() => handleTimerClick(item.name, trait)}
-                              className={`timer-button ${timer ? 'active' : ''}`}
-                              title={timer ? 'Remove timer' : 'Set research timer'}
-                            >
-                              <Timer className="w-3 h-3" />
-                            </button>
-                          )}
-                          {timer && timeLeft[timerKey] && (
-                            <Badge 
-                              variant={timeLeft[timerKey] === 'Complete!' ? 'default' : 'secondary'}
-                              className="text-xs px-1 py-0"
-                            >
-                              {timeLeft[timerKey]}
-                            </Badge>
-                          )}
-                        </div>
-                      </td>
-                    );
-                  })}
-                </tr>
+      <div className="crafting-table-responsive">
+        <Table>
+          <TableHeader>
+            <TableRow className="border-b border-border bg-muted/50">
+              <TableHead className="w-48 min-w-[12rem] max-w-[16rem] font-semibold">Item</TableHead>
+              <TableHead className="w-12 text-center" title="Bank Status">
+                <Building2 className="w-4 h-4 mx-auto" />
+              </TableHead>
+              <TableHead className="w-12 text-center" title="Notes">
+                <FileText className="w-4 h-4 mx-auto" />
+              </TableHead>
+              {filteredTraits.map(trait => (
+                <TableHead key={trait} className="w-16 p-2 text-center">
+                  <div className="trait-header text-xs">
+                    {trait}
+                  </div>
+                </TableHead>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredItems.map(item => (
+              <TableRow key={item.name} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
+                <TableCell className="font-medium truncate">
+                  <div className="max-w-[16rem] truncate" title={item.name}>
+                    {item.name}
+                  </div>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Checkbox
+                    checked={isItemInBank(item.name)}
+                    onCheckedChange={() => handleBankToggle(item.name)}
+                    title="In Bank"
+                  />
+                </TableCell>
+                <TableCell className="text-center">
+                  <button
+                    onClick={() => handleNotesClick(item.name)}
+                    className={`notes-icon ${getItemNote(item.name) ? 'has-notes' : ''}`}
+                    title="Add notes"
+                  >
+                    <FileText className="w-5 h-5" />
+                  </button>
+                </TableCell>
+                {filteredTraits.map(trait => {
+                  const timer = getTimerForTrait(item.name, trait);
+                  const timerKey = `${item.name}-${trait}`;
+                  return (
+                    <TableCell key={trait} className="text-center relative">
+                      <div className="flex flex-col items-center gap-1">
+                        <button
+                          onClick={() => handleTraitToggle(item.name, trait)}
+                          className={`trait-checkbox ${
+                            isTraitCompleted(item.name, trait) ? 'checked' : 'unchecked'
+                          }`}
+                          title={`${trait} - ${isTraitCompleted(item.name, trait) ? 'Completed' : 'Not researched'}`}
+                        >
+                          {isTraitCompleted(item.name, trait) && (
+                            <Check className="w-4 h-4 text-green-700" />
+                          )}
+                        </button>
+                        {!isTraitCompleted(item.name, trait) && (
+                          <button
+                            onClick={() => handleTimerClick(item.name, trait)}
+                            className={`timer-button ${timer ? 'active' : ''}`}
+                            title={timer ? 'Remove timer' : 'Set research timer'}
+                          >
+                            <Timer className="w-3 h-3" />
+                          </button>
+                        )}
+                        {timer && timeLeft[timerKey] && (
+                          <Badge 
+                            variant={timeLeft[timerKey] === 'Complete!' ? 'default' : 'secondary'}
+                            className="text-xs px-1 py-0"
+                          >
+                            {timeLeft[timerKey]}
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
 
       <NotesModal
