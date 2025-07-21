@@ -113,7 +113,7 @@ export function ESOCraftingTracker() {
         tp.trait === trait
       );
 
-      let newProgress = [...prev.traitProgress];
+      const newProgress = [...prev.traitProgress];
 
       if (existingProgressIndex >= 0) {
         if (completed) {
@@ -149,7 +149,7 @@ export function ESOCraftingTracker() {
         n.item === item
       );
 
-      let newNotes = [...prev.itemNotes];
+      const newNotes = [...prev.itemNotes];
 
       if (existingNoteIndex >= 0) {
         if (note.trim()) {
@@ -197,7 +197,7 @@ export function ESOCraftingTracker() {
         status.item === item
       );
 
-      let newBankStatus = [...prev.itemBankStatus];
+      const newBankStatus = [...prev.itemBankStatus];
 
       if (existingStatusIndex >= 0) {
         if (inBank) {
@@ -236,7 +236,7 @@ export function ESOCraftingTracker() {
         timer.trait === trait
       );
 
-      let newTimers = [...prev.researchTimers];
+      const newTimers = [...prev.researchTimers];
 
       if (existingTimerIndex >= 0) {
         newTimers[existingTimerIndex] = { ...newTimers[existingTimerIndex], endTime };
