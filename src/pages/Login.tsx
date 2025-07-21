@@ -24,8 +24,8 @@ export default function Login() {
         if (error) throw error;
         nav("/");
       }
-    } catch (err: any) {
-      setMsg(err.message);
+    } catch (err) {
+      setMsg((err as { message?: string }).message);
     } finally {
       setLoading(false);
     }
