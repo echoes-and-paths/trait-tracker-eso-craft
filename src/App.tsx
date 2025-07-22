@@ -1,3 +1,4 @@
+import Characters from "./pages/Characters";
 import RequireAuth from "./components/RequireAuth";
 import LogoutButton from "./components/LogoutButton";
 import Login from "./pages/Login";
@@ -21,6 +22,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<RequireAuth><Index /></RequireAuth>} />
           <Route path="login" element={<Login />} />
+          <Route path="characters" element={<RequireAuth><Characters /></RequireAuth>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
