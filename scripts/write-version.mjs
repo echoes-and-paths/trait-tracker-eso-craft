@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs';
 
-const commit = process.env.APP_COMMIT || 'unknown';
+const commit = process.env.APP_COMMIT || process.env.CF_PAGES_COMMIT_SHA || 'unknown';
 const buildTime = new Date().toISOString();
 
 const content = `// Auto‑generated at build
