@@ -54,11 +54,21 @@ export default function TraitGrid({ characterId }: { characterId: string }) {
     );
   }
 
+  async function updateTimer(row: Row, value: string) {
+    const iso = value ? new Date(value).toISOString() : null;
+    const payload = { character_id: characterId, item_id: row.id, research_ends_at: iso };
+    const { error } = await supabase
+      .from("character_items")
+      .upsert(payload, { onConflict: "character_id,item_id" });
+    if (error) { setMsg(error.message); return; }
+    setRows((r)=> r!.map(x => x.id===row.id ? ({...x, character_items:{...(x.character_items??{}), research_ends_at: iso}}) : x) as Row[]);
+  }
   if (msg) return <p style={{ color: "red" }}>{msg}</p>;
   if (!rows) return <p>Loading grid…</p>;
 
   return (
     <table style={{ margin: "0 auto", borderCollapse: "collapse" }}>
+            <th>Finish Time</th>
       <thead>
         <tr>
           <th>Item</th>
@@ -81,6 +91,12 @@ export default function TraitGrid({ characterId }: { characterId: string }) {
                   onChange={(e) => toggle(row, "completed", e.target.checked)}
                 />
               </td>
+                <td style={{ textAlign: "center" }}>
+                  <input type="datetime-local"
+                    value={(status.research_ends_at ? new Date(status.research_ends_at).toISOString().slice(0,16) : "")}
+                    onChange={(e)=>updateTimer(row, e.target.value)}
+                  />
+                </td>
               <td style={{ textAlign: "center" }}>
                 <input
                   type="checkbox"
