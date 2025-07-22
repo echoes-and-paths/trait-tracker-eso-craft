@@ -1,4 +1,4 @@
-import TraitGrid from "@/components/TraitGrid";
+import TraitGridGrouped from "@/components/TraitGridGrouped";
 import { useActiveCharacter } from "@/lib/useActiveCharacter";
 import { ESOCraftingTracker } from '../components/ESOCraftingTracker';
 
@@ -31,7 +31,7 @@ const Index = () => {
 
       <h2>{character.name}</h2>
 
-      <p><TraitGrid characterId={character.id} /></p>
+      <TraitGridGrouped characterId={character.id} />
 
     </div>
 
