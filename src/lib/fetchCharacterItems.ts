@@ -4,6 +4,7 @@ type Item = {
   id: string;
   item_type: string;
   trait: string;
+  group: string;
 };
 type State = {
   item_id: string;
@@ -16,7 +17,7 @@ export async function fetchCharacterItems(characterId: string) {
   // 1) All items (static list)
   const { data: items, error: itemsErr } = await supabase
     .from<Item>("items")
-    .select("id,item_type,trait")
+    .select("id,item_type,trait,group")
     .order("item_type", { ascending: true })
     .order("trait", { ascending: true });
   if (itemsErr) throw itemsErr;

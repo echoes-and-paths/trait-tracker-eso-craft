@@ -6,6 +6,7 @@ type Row = {
   id: string;
   item_type: string;
   trait: string;
+  group: string;
   character_items: {
     id?: string;
     completed?: boolean;
