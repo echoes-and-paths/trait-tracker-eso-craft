@@ -14,7 +14,7 @@ A comprehensive Elder Scrolls Online crafting research tracker built with React,
 - **Notes System**: Add research notes for each item with modal interface
 - **Smart Search**: Filter items and traits in real-time
 - **Theme Support**: Toggle between light and dark themes (saved per profile)
-- **Data Persistence**: All data saved to localStorage with instant sync
+- **Data Persistence**: Data synced to Supabase with online persistence
 - **Responsive Design**: Works perfectly on desktop, tablet, and mobile devices
 
 ## Tech Stack
@@ -23,7 +23,7 @@ A comprehensive Elder Scrolls Online crafting research tracker built with React,
 - **Build Tool**: Vite
 - **Styling**: TailwindCSS with custom ESO-themed design system
 - **UI Components**: shadcn/ui component library
-- **State Management**: React hooks with localStorage persistence
+- **State Management**: React hooks with Supabase synchronization
 - **Icons**: Lucide React icons
 
 ## Getting Started
@@ -100,13 +100,14 @@ Click the sun/moon icon to toggle between light and dark themes. Your preference
 
 ## Data Storage
 
-All data is stored locally in your browser using localStorage. This includes:
-- Character profiles and settings
-- Research progress for all traits
-- Item notes
-- Theme preferences
+Data is now synced with a Supabase backend. The following tables are used:
 
-No data is sent to external servers, ensuring your privacy and allowing offline use.
+- `trait_progress`
+- `item_notes`
+- `bank_status`
+- `research_timers`
+
+On first login any existing localStorage data will be uploaded to Supabase and localStorage is cleared. Subsequent changes are written directly through the API so your progress is kept in sync across devices.
 
 ## Browser Compatibility
 
