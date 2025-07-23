@@ -6,6 +6,7 @@ type Row = {
   id: string;
   item_type: string;
   trait: string;
+  group: string;
   character_items: {
     completed?: boolean;
     in_bank?: boolean;
@@ -15,20 +16,16 @@ type Row = {
 
 type GroupName = "Blacksmithing" | "Clothing" | "Woodworking" | "Jewelry" | "Other";
 
-function craftGroup(itemType: string): GroupName {
-  const t = itemType.toLowerCase();
-  if (
-    ["axe","sword","dagger","mace","maul","greatsword","battle axe","arm cops","boots","bracers","cuirass","gauntlets","greaves","helm","pauldron","sabatons","girdle","vambraces","helmets","shoulders"].some(k => t.includes(k))
-  ) return "Blacksmithing";
-  if (
-    ["robe","jerkin","gloves","hat","pants","shoes","jack","belt","guards","arm cops","bracers","cuirass"].some(k => t.includes(k)) ||
-    ["arm cops","boots","bracers","cuirass","gloves","helm","jack","legs","robe","sabaton","shoes","shoulders","belt","girdle","sash"].some(k=>t.includes(k))
-  ) return "Clothing";
-  if (
-    ["bow","shield","inferno staff","ice staff","lightning staff","restoration staff","flame staff","frost staff","shock staff","staff"].some(k => t.includes(k))
-  ) return "Woodworking";
-  if (["ring","necklace"].some(k => t.includes(k))) return "Jewelry";
-  return "Other";
+function craftGroup(group: string): GroupName {
+  switch (group) {
+    case "Blacksmithing":
+    case "Clothing":
+    case "Woodworking":
+    case "Jewelry":
+      return group;
+    default:
+      return "Other";
+  }
 }
 
 export default function TraitGridGrouped({ characterId }: { characterId: string }) {
@@ -53,7 +50,7 @@ export default function TraitGridGrouped({ characterId }: { characterId: string 
 
   // Group
   const groups: Record<GroupName, Row[]> = { Blacksmithing: [], Clothing: [], Woodworking: [], Jewelry: [], Other: [] };
-  rows.forEach(r => groups[craftGroup(r.item_type)].push(r));
+  rows.forEach(r => groups[craftGroup(r.group)].push(r));
 
   const tableStyle: React.CSSProperties = { margin: "0 auto", borderCollapse: "collapse", width: "95%", maxWidth: 1100 };
   const thTd: React.CSSProperties = { borderBottom: "1px solid #333", padding: "6px 8px" };
