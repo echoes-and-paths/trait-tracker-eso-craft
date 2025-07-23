@@ -36,7 +36,7 @@ export default function Login() {
       <h2>{mode === "signup" ? "Create account" : "Sign in"}</h2>
       <form onSubmit={handleSubmit}>
         <label>Email<br/>
-          <input value={email} onChange={e=>setEmail(e.target.value)} type="email" required />
+          <input value={email} onChange={e=>setEmail(e.target.value)} type="email" required autoFocus />
         </label><br/><br/>
         <label>Password<br/>
           <input value={pw} onChange={e=>setPw(e.target.value)} type="password" required />
