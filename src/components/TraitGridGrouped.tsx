@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { fetchCharacterItems } from "@/lib/fetchCharacterItems";
-import { supabase } from "@/lib/supabaseClient";
+import { useCharacterItems } from "@/hooks/useCharacterItems";
+import { useCharacterItemMutation } from "@/hooks/useCharacterItemMutation";
 
 type Row = {
   id: string;
@@ -32,24 +31,15 @@ function craftGroup(itemType: string): GroupName {
 }
 
 export default function TraitGridGrouped({ characterId }: { characterId: string }) {
-  const [rows, setRows] = useState<Row[] | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
+  const { data: rows, isLoading, error } = useCharacterItems(characterId);
+  const mutation = useCharacterItemMutation();
 
-  useEffect(() => {
-    fetchCharacterItems(characterId)
-      .then(setRows)
-      .catch((e) => setMsg(e.message));
-  }, [characterId]);
-
-  async function upsert(field: "completed" | "in_bank" | "research_ends_at", row: Row, value: boolean | string | null) {
+  function upsert(field: "completed" | "in_bank" | "research_ends_at", row: Row, value: boolean | string | null) {
     const payload: { character_id: string; item_id: string; completed?: boolean; in_bank?: boolean; research_ends_at?: string | null } = { character_id: characterId, item_id: row.id, [field]: value };
-    const { error } = await supabase.from("character_items").upsert(payload, { onConflict: "character_id,item_id" });
-    if (error) { setMsg(error.message); return; }
-    setRows(r => r!.map(x => x.id === row.id ? { ...x, character_items: { ...(x.character_items ?? {}), [field]: value } } : x) as Row[]);
+    mutation.mutate(payload);
   }
-
-  if (msg) return <p style={{ color: "red" }}>{msg}</p>;
-  if (!rows) return <p>Loading grid…</p>;
+  if (error) return <p style={{ color: "red" }}>{(error as Error).message}</p>;
+  if (isLoading || !rows) return <p>Loading grid…</p>;
 
   // Group
   const groups: Record<GroupName, Row[]> = { Blacksmithing: [], Clothing: [], Woodworking: [], Jewelry: [], Other: [] };
