@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ProfileManager } from './ProfileManager';
 import { Controls } from './Controls';
 import { CraftingTable } from './CraftingTable';
+import { FirstRunTour } from './FirstRunTour';
 import { Profile, TraitProgress, ItemNote, ItemBankStatus, ResearchTimer, AppState } from '../types';
 import { CRAFTING_DATA } from '../data/craftingData';
 import { supabase } from '@/lib/supabaseClient';
@@ -33,6 +34,7 @@ export function ESOCraftingTracker() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [showFirstRun, setShowFirstRun] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -139,6 +141,12 @@ export function ESOCraftingTracker() {
       profiles: [...prev.profiles, newProfile],
       currentProfileId: newProfile.id
     }));
+
+    const tutorialKey = `tutorial_${newProfile.id}`;
+    if (!localStorage.getItem(tutorialKey)) {
+      setShowFirstRun(true);
+      localStorage.setItem(tutorialKey, 'shown');
+    }
   };
 
   const handleProfileSelect = (profileId: string) => {
@@ -498,6 +506,7 @@ export function ESOCraftingTracker() {
           </div>
         )}
       </div>
+      <FirstRunTour open={showFirstRun} onClose={() => setShowFirstRun(false)} />
     </div>
   );
 }

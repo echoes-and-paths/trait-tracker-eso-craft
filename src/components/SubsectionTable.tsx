@@ -270,6 +270,9 @@ export function SubsectionTable({
                             isTraitCompleted(item.name, trait) ? 'checked' : 'unchecked'
                           }`}
                           title={`${trait} - ${isTraitCompleted(item.name, trait) ? 'Completed' : 'Not researched'}`}
+                          role="checkbox"
+                          aria-checked={isTraitCompleted(item.name, trait)}
+                          aria-label={`${trait} for ${item.name}`}
                         >
                           {isTraitCompleted(item.name, trait) && (
                             <Check className="w-4 h-4 text-green-700" />
