@@ -46,12 +46,17 @@ cd eso-crafting-research-tracker
 npm install
 ```
 
-3. Start the development server:
+3. Copy the example environment file and add your Supabase credentials:
+```bash
+cp .env.example .env
+# then edit .env to include your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY
+```
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-4. Open your browser and navigate to `http://localhost:8080`
+5. Open your browser and navigate to `http://localhost:8080`
 
 ### Building for Production
 
