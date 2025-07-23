@@ -109,6 +109,16 @@ Data is now synced with a Supabase backend. The following tables are used:
 
 On first login any existing localStorage data will be uploaded to Supabase and localStorage is cleared. Subsequent changes are written directly through the API so your progress is kept in sync across devices.
 
+### Running the Supabase Schema
+
+The `supabase_schema.sql` file contains the database tables required by the tracker. Import this file in the SQL editor of your Supabase project or execute it with the Supabase CLI:
+
+```bash
+supabase db execute supabase_schema.sql
+```
+
+Refer to the [Supabase SQL documentation](https://supabase.com/docs/guides/database/sql-files) for more information.
+
 ## Browser Compatibility
 
 - Chrome/Chromium (recommended)
