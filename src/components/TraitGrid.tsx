@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
-import { fetchCharacterItems } from "@/lib/fetchCharacterItems";
-import { supabase } from "@/lib/supabaseClient";
+import { useCharacterItems } from "@/hooks/useCharacterItems";
+import { useCharacterItemMutation } from "@/hooks/useCharacterItemMutation";
 
 type Row = {
   id: string;
@@ -16,56 +15,27 @@ type Row = {
 };
 
 export default function TraitGrid({ characterId }: { characterId: string }) {
-  const [rows, setRows] = useState<Row[] | null>(null);
-  const [msg, setMsg] = useState<string | null>(null);
+  const { data: rows, isLoading, error } = useCharacterItems(characterId);
+  const mutation = useCharacterItemMutation();
 
-  useEffect(() => {
-    fetchCharacterItems(characterId)
-      .then(setRows)
-      .catch((e) => setMsg(e.message));
-  }, [characterId]);
-
-  async function toggle(
+  function toggle(
     row: Row,
     field: "completed" | "in_bank",
     value: boolean
   ) {
-    const payload = {
+    mutation.mutate({
       character_id: characterId,
       item_id: row.id,
       [field]: value,
-    };
-    const { error } = await supabase
-      .from("character_items")
-      .upsert(payload, { onConflict: "character_id,item_id" });
-    if (error) {
-      setMsg(error.message);
-      return;
-    }
-    setRows(
-      (r) =>
-        r!.map((x) =>
-          x.id === row.id
-            ? {
-                ...x,
-                character_items: { ...(x.character_items ?? {}), [field]: value },
-              }
-            : x
-        ) as Row[]
-    );
+    });
   }
 
-  async function updateTimer(row: Row, value: string) {
+  function updateTimer(row: Row, value: string) {
     const iso = value ? new Date(value).toISOString() : null;
-    const payload = { character_id: characterId, item_id: row.id, research_ends_at: iso };
-    const { error } = await supabase
-      .from("character_items")
-      .upsert(payload, { onConflict: "character_id,item_id" });
-    if (error) { setMsg(error.message); return; }
-    setRows((r)=> r!.map(x => x.id===row.id ? ({...x, character_items:{...(x.character_items??{}), research_ends_at: iso}}) : x) as Row[]);
+    mutation.mutate({ character_id: characterId, item_id: row.id, research_ends_at: iso });
   }
-  if (msg) return <p style={{ color: "red" }}>{msg}</p>;
-  if (!rows) return <p>Loading grid…</p>;
+  if (error) return <p style={{ color: "red" }}>{(error as Error).message}</p>;
+  if (isLoading || !rows) return <p>Loading grid…</p>;
 
   return (
     <table style={{ margin: "0 auto", borderCollapse: "collapse" }}>
