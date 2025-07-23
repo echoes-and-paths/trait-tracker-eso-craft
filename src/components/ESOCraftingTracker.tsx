@@ -4,7 +4,7 @@ import { Controls } from './Controls';
 import { CraftingTable } from './CraftingTable';
 import { Profile, TraitProgress, ItemNote, ItemBankStatus, ResearchTimer, AppState } from '../types';
 import { CRAFTING_DATA } from '../data/craftingData';
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { Hammer, Shirt, TreePine, Gem, Search, Sun, Moon, RotateCcw } from 'lucide-react';
 import { Input } from './ui/input';
@@ -29,9 +29,93 @@ const INITIAL_STATE: AppState = {
 };
 
 export function ESOCraftingTracker() {
-  const [appState, setAppState] = useLocalStorage<AppState>('eso-crafting-tracker', INITIAL_STATE);
+  const [appState, setAppState] = useState<AppState>(INITIAL_STATE);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function load() {
+      const { data: { session } } = await supabase.auth.getSession();
+      let state: AppState = INITIAL_STATE;
+      if (session) setUserId(session.user.id);
+
+      const local = localStorage.getItem('eso-crafting-tracker');
+      if (session && local) {
+        const parsed: AppState = JSON.parse(local);
+        await Promise.all([
+          parsed.traitProgress.length &&
+            supabase.from('trait_progress').upsert(
+              parsed.traitProgress.map(p => ({ ...p, user_id: session.user.id }))
+            ),
+          parsed.itemNotes.length &&
+            supabase.from('item_notes').upsert(
+              parsed.itemNotes.map(n => ({ ...n, user_id: session.user.id }))
+            ),
+          parsed.itemBankStatus.length &&
+            supabase.from('bank_status').upsert(
+              parsed.itemBankStatus.map(b => ({ ...b, user_id: session.user.id }))
+            ),
+          parsed.researchTimers.length &&
+            supabase.from('research_timers').upsert(
+              parsed.researchTimers.map(t => ({
+                ...t,
+                user_id: session.user.id,
+                end_time: t.endTime.toISOString()
+              }))
+            )
+        ]);
+        localStorage.removeItem('eso-crafting-tracker');
+      }
+
+      if (session) {
+        const { data: profiles } = await supabase
+          .from('characters')
+          .select('id,name')
+          .eq('user_id', session.user.id);
+        const { data: progress } = await supabase
+          .from('trait_progress')
+          .select('profile_id,section,item,trait,completed,end_time')
+          .eq('user_id', session.user.id);
+        const { data: notes } = await supabase
+          .from('item_notes')
+          .select('profile_id,section,item,note')
+          .eq('user_id', session.user.id);
+        const { data: bank } = await supabase
+          .from('bank_status')
+          .select('profile_id,section,item,in_bank')
+          .eq('user_id', session.user.id);
+        const { data: timers } = await supabase
+          .from('research_timers')
+          .select('profile_id,section,item,trait,end_time')
+          .eq('user_id', session.user.id);
+
+        state = {
+          profiles: profiles ?? [],
+          currentProfileId: profiles?.[0]?.id || null,
+          traitProgress: progress ?? [],
+          itemNotes: notes ?? [],
+          itemBankStatus: bank ?? [],
+          researchTimers: (timers ?? []).map(t => ({
+            profileId: t.profile_id,
+            section: t.section,
+            item: t.item,
+            trait: t.trait,
+            endTime: t.end_time ? new Date(t.end_time) : new Date()
+          })),
+          searchQuery: ''
+        };
+      } else if (local) {
+        state = JSON.parse(local);
+      }
+
+      setAppState(state);
+      setLoading(false);
+    }
+
+    load();
+  }, []);
 
   const currentProfile = appState.profiles.find(p => p.id === appState.currentProfileId);
 
@@ -102,8 +186,8 @@ export function ESOCraftingTracker() {
   };
 
   // Progress Management
-  const handleProgressChange = (section: string, item: string, trait: string, completed: boolean) => {
-    if (!currentProfile) return;
+  const handleProgressChange = async (section: string, item: string, trait: string, completed: boolean) => {
+    if (!currentProfile || !userId) return;
 
     setAppState(prev => {
       const existingProgressIndex = prev.traitProgress.findIndex(tp =>
@@ -136,11 +220,24 @@ export function ESOCraftingTracker() {
         traitProgress: newProgress
       };
     });
+
+    const payload = { user_id: userId, profile_id: currentProfile.id, section, item, trait, completed };
+    if (completed) {
+      await supabase.from('trait_progress').upsert(payload);
+    } else {
+      await supabase.from('trait_progress').delete().match({
+        user_id: userId,
+        profile_id: currentProfile.id,
+        section,
+        item,
+        trait
+      });
+    }
   };
 
   // Notes Management
-  const handleNoteChange = (section: string, item: string, note: string) => {
-    if (!currentProfile) return;
+  const handleNoteChange = async (section: string, item: string, note: string) => {
+    if (!currentProfile || !userId) return;
 
     setAppState(prev => {
       const existingNoteIndex = prev.itemNotes.findIndex(n =>
@@ -171,11 +268,18 @@ export function ESOCraftingTracker() {
         itemNotes: newNotes
       };
     });
+
+    const payload = { user_id: userId, profile_id: currentProfile.id, section, item, note };
+    if (note.trim()) {
+      await supabase.from('item_notes').upsert(payload);
+    } else {
+      await supabase.from('item_notes').delete().match({ user_id: userId, profile_id: currentProfile.id, section, item });
+    }
   };
 
   // Reset Progress
-  const handleResetProgress = () => {
-    if (!currentProfile) return;
+  const handleResetProgress = async () => {
+    if (!currentProfile || !userId) return;
 
     setAppState(prev => ({
       ...prev,
@@ -184,11 +288,18 @@ export function ESOCraftingTracker() {
       itemBankStatus: prev.itemBankStatus.filter(status => status.profileId !== currentProfile.id),
       researchTimers: prev.researchTimers.filter(timer => timer.profileId !== currentProfile.id)
     }));
+
+    await Promise.all([
+      supabase.from('trait_progress').delete().match({ user_id: userId, profile_id: currentProfile.id }),
+      supabase.from('item_notes').delete().match({ user_id: userId, profile_id: currentProfile.id }),
+      supabase.from('bank_status').delete().match({ user_id: userId, profile_id: currentProfile.id }),
+      supabase.from('research_timers').delete().match({ user_id: userId, profile_id: currentProfile.id })
+    ]);
   };
 
   // Bank Status Management
-  const handleBankStatusChange = (section: string, item: string, inBank: boolean) => {
-    if (!currentProfile) return;
+  const handleBankStatusChange = async (section: string, item: string, inBank: boolean) => {
+    if (!currentProfile || !userId) return;
 
     setAppState(prev => {
       const existingStatusIndex = prev.itemBankStatus.findIndex(status =>
@@ -219,11 +330,18 @@ export function ESOCraftingTracker() {
         itemBankStatus: newBankStatus
       };
     });
+
+    const payload = { user_id: userId, profile_id: currentProfile.id, section, item, in_bank: inBank };
+    if (inBank) {
+      await supabase.from('bank_status').upsert(payload);
+    } else {
+      await supabase.from('bank_status').delete().match({ user_id: userId, profile_id: currentProfile.id, section, item });
+    }
   };
 
   // Timer Management
-  const handleTimerSet = (section: string, item: string, trait: string, hours: number) => {
-    if (!currentProfile) return;
+  const handleTimerSet = async (section: string, item: string, trait: string, hours: number) => {
+    if (!currentProfile || !userId) return;
 
     const endTime = new Date();
     endTime.setHours(endTime.getHours() + hours);
@@ -256,14 +374,23 @@ export function ESOCraftingTracker() {
       };
     });
 
+    await supabase.from('research_timers').upsert({
+      user_id: userId,
+      profile_id: currentProfile.id,
+      section,
+      item,
+      trait,
+      end_time: endTime.toISOString()
+    });
+
     toast({
       title: "Research Timer Set",
       description: `Timer set for ${item} - ${trait} (${hours}h)`,
     });
   };
 
-  const handleTimerRemove = (section: string, item: string, trait: string) => {
-    if (!currentProfile) return;
+  const handleTimerRemove = async (section: string, item: string, trait: string) => {
+    if (!currentProfile || !userId) return;
 
     setAppState(prev => ({
       ...prev,
@@ -274,6 +401,14 @@ export function ESOCraftingTracker() {
           timer.trait === trait)
       )
     }));
+
+    await supabase.from('research_timers').delete().match({
+      user_id: userId,
+      profile_id: currentProfile.id,
+      section,
+      item,
+      trait
+    });
   };
 
   // Filter data for current profile
