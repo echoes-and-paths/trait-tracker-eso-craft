@@ -7,6 +7,16 @@ import { Profile, TraitProgress, ItemNote, ItemBankStatus, ResearchTimer, AppSta
 import { CRAFTING_DATA } from '../data/craftingData';
 import { supabase } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
+import {
+  useTraitProgress,
+  useSetTraitProgress,
+  useRemoveTraitProgress,
+} from '@/hooks/useTraitProgress';
+import {
+  useResearchTimers,
+  useSetResearchTimer,
+  useRemoveResearchTimer,
+} from '@/hooks/useResearchTimers';
 import { Hammer, Shirt, TreePine, Gem, Search, Sun, Moon, RotateCcw } from 'lucide-react';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
@@ -47,10 +57,16 @@ export function ESOCraftingTracker() {
       if (session && local) {
         const parsed: AppState = JSON.parse(local);
         await Promise.all([
-          parsed.traitProgress.length &&
-            supabase.from('trait_progress').upsert(
-              parsed.traitProgress.map(p => ({ ...p, user_id: session.user.id }))
-            ),
+          ...parsed.traitProgress.map(p =>
+            setTraitProgress.mutateAsync({
+              user_id: session.user.id,
+              profile_id: p.profileId,
+              section: p.section,
+              item: p.item,
+              trait: p.trait,
+              completed: p.completed
+            })
+          ),
           parsed.itemNotes.length &&
             supabase.from('item_notes').upsert(
               parsed.itemNotes.map(n => ({ ...n, user_id: session.user.id }))
@@ -59,14 +75,16 @@ export function ESOCraftingTracker() {
             supabase.from('bank_status').upsert(
               parsed.itemBankStatus.map(b => ({ ...b, user_id: session.user.id }))
             ),
-          parsed.researchTimers.length &&
-            supabase.from('research_timers').upsert(
-              parsed.researchTimers.map(t => ({
-                ...t,
-                user_id: session.user.id,
-                end_time: t.endTime.toISOString()
-              }))
-            )
+          ...parsed.researchTimers.map(t =>
+            setResearchTimer.mutateAsync({
+              user_id: session.user.id,
+              profile_id: t.profileId,
+              section: t.section,
+              item: t.item,
+              trait: t.trait,
+              end_time: t.endTime.toISOString()
+            })
+          )
         ]);
         localStorage.removeItem('eso-crafting-tracker');
       }
@@ -76,10 +94,6 @@ export function ESOCraftingTracker() {
           .from('characters')
           .select('id,name')
           .eq('user_id', session.user.id);
-        const { data: progress } = await supabase
-          .from('trait_progress')
-          .select('profile_id,section,item,trait,completed,end_time')
-          .eq('user_id', session.user.id);
         const { data: notes } = await supabase
           .from('item_notes')
           .select('profile_id,section,item,note')
@@ -88,24 +102,14 @@ export function ESOCraftingTracker() {
           .from('bank_status')
           .select('profile_id,section,item,in_bank')
           .eq('user_id', session.user.id);
-        const { data: timers } = await supabase
-          .from('research_timers')
-          .select('profile_id,section,item,trait,end_time')
-          .eq('user_id', session.user.id);
 
         state = {
           profiles: profiles ?? [],
           currentProfileId: profiles?.[0]?.id || null,
-          traitProgress: progress ?? [],
+          traitProgress: [],
           itemNotes: notes ?? [],
           itemBankStatus: bank ?? [],
-          researchTimers: (timers ?? []).map(t => ({
-            profileId: t.profile_id,
-            section: t.section,
-            item: t.item,
-            trait: t.trait,
-            endTime: t.end_time ? new Date(t.end_time) : new Date()
-          })),
+          researchTimers: [],
           searchQuery: ''
         };
       } else if (local) {
@@ -120,6 +124,13 @@ export function ESOCraftingTracker() {
   }, []);
 
   const currentProfile = appState.profiles.find(p => p.id === appState.currentProfileId);
+
+  const { data: progressData } = useTraitProgress(currentProfile?.id);
+  const { data: timerData } = useResearchTimers(currentProfile?.id);
+  const setTraitProgress = useSetTraitProgress();
+  const removeTraitProgress = useRemoveTraitProgress();
+  const setResearchTimer = useSetResearchTimer();
+  const removeResearchTimer = useRemoveResearchTimer();
 
   // Apply theme to document
   useEffect(() => {
@@ -231,15 +242,9 @@ export function ESOCraftingTracker() {
 
     const payload = { user_id: userId, profile_id: currentProfile.id, section, item, trait, completed };
     if (completed) {
-      await supabase.from('trait_progress').upsert(payload);
+      await setTraitProgress.mutateAsync(payload);
     } else {
-      await supabase.from('trait_progress').delete().match({
-        user_id: userId,
-        profile_id: currentProfile.id,
-        section,
-        item,
-        trait
-      });
+      await removeTraitProgress.mutateAsync(payload);
     }
   };
 
@@ -298,10 +303,28 @@ export function ESOCraftingTracker() {
     }));
 
     await Promise.all([
-      supabase.from('trait_progress').delete().match({ user_id: userId, profile_id: currentProfile.id }),
+      ...(progressData ?? []).map(tp =>
+        removeTraitProgress.mutateAsync({
+          user_id: userId,
+          profile_id: currentProfile.id,
+          section: tp.section,
+          item: tp.item,
+          trait: tp.trait,
+          completed: tp.completed,
+        })
+      ),
       supabase.from('item_notes').delete().match({ user_id: userId, profile_id: currentProfile.id }),
       supabase.from('bank_status').delete().match({ user_id: userId, profile_id: currentProfile.id }),
-      supabase.from('research_timers').delete().match({ user_id: userId, profile_id: currentProfile.id })
+      ...(timerData ?? []).map(t =>
+        removeResearchTimer.mutateAsync({
+          user_id: userId,
+          profile_id: currentProfile.id,
+          section: t.section,
+          item: t.item,
+          trait: t.trait,
+          end_time: null,
+        })
+      )
     ]);
   };
 
@@ -382,7 +405,7 @@ export function ESOCraftingTracker() {
       };
     });
 
-    await supabase.from('research_timers').upsert({
+    await setResearchTimer.mutateAsync({
       user_id: userId,
       profile_id: currentProfile.id,
       section,
@@ -410,20 +433,21 @@ export function ESOCraftingTracker() {
       )
     }));
 
-    await supabase.from('research_timers').delete().match({
+    await removeResearchTimer.mutateAsync({
       user_id: userId,
       profile_id: currentProfile.id,
       section,
       item,
-      trait
+      trait,
+      end_time: null,
     });
   };
 
   // Filter data for current profile
-  const currentProgress = (appState.traitProgress || []).filter(tp => tp.profileId === currentProfile?.id);
+  const currentProgress = progressData ?? [];
   const currentNotes = (appState.itemNotes || []).filter(note => note.profileId === currentProfile?.id);
   const currentBankStatus = (appState.itemBankStatus || []).filter(status => status.profileId === currentProfile?.id);
-  const currentTimers = (appState.researchTimers || []).filter(timer => timer.profileId === currentProfile?.id);
+  const currentTimers = timerData ?? [];
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
